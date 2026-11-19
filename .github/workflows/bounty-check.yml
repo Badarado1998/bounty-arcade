@@ -1,0 +1,20 @@
+name: bounty-check
+on: pull_request
+permissions:
+  contents: read
+jobs:
+  check:
+    name: bounty (${{ matrix.slug }})
+    runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.49.1-noble
+    strategy:
+      fail-fast: false
+      matrix:
+        slug: [board-search, board-undo, board-wip-limit, flight-fuel, flight-replay, flight-wind, puzzle-deadlock, puzzle-progress, puzzle-replay-links, routes-segments, routes-threshold, routes-time]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - run: npm ci
+      # Each check.yml's only run step; its agent judge needs a model key and stays out of CI.
+      - run: CHECKS=bounties/${{ matrix.slug }} npm test
