@@ -12,9 +12,15 @@ jobs:
       matrix:
         slug: [board-search, board-undo, board-wip-limit, flight-fuel, flight-replay, flight-wind, puzzle-deadlock, puzzle-progress, puzzle-replay-links, routes-segments, routes-threshold, routes-time]
     steps:
+      # Checkers and harness come from the base; only the PR's apps/ is the candidate.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+          path: pr
+      - run: rm -rf apps && mv pr/apps apps && rm -rf pr
       - run: npm ci
       # Each check.yml's only run step; its agent judge needs a model key and stays out of CI.
       - run: CHECKS=bounties/${{ matrix.slug }} npm test
